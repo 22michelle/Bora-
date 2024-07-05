@@ -20,6 +20,31 @@ body {
   justify-content: center;
 }
 
+/* spinner */
+.spinner-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* Asegura que el spinner esté por encima de todo */
+}
+
+.spinner {
+  width: 100px;
+  height: 100px;
+  border: 10px solid rgba(255, 255, 255, 0.3); /* Estilo del borde */
+  border-top-color: black; /* Color del borde superior */
+  border-radius: 50%;
+  animation: spin 1s linear infinite; /* Animación giratoria */
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
 /* form */
 .container {
   max-width: 700px;
