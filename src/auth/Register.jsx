@@ -1,88 +1,121 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "../App.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 
 const Register = () => {
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [formErrors, setFormErrors] = useState({
+    passwordError: "",
+    confirmPasswordError: "",
+  });
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    if (name === "password" || name === "confirmPassword") {
+      validatePassword(name, value);
+    }
+  };
+
+  const validatePassword = (name, value) => {
+    if (name === "password") {
+      if (value.length < 8) {
+        setFormErrors((prevErrors) => ({
+          ...prevErrors,
+          passwordError: "Password must be at least 8 characters long",
+        }));
+      } else {
+        setFormErrors((prevErrors) => ({
+          ...prevErrors,
+          passwordError: "",
+        }));
+      }
+    } else if (name === "confirmPassword") {
+      if (value !== formData.password) {
+        setFormErrors((prevErrors) => ({
+          ...prevErrors,
+          confirmPasswordError: "Passwords do not match",
+        }));
+      } else {
+        setFormErrors((prevErrors) => ({
+          ...prevErrors,
+          confirmPasswordError: "",
+        }));
+      }
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
-    const values = Object.fromEntries(formData.entries());
 
-<<<<<<< HEAD
-    setLoading(true); // spinner
-
-    // Validar que las contraseñas coincidan en el frontend
-    if (values.password !== values.confirmPassword) {
-      setError("Passwords do not match!");
-=======
-    setLoading(true); // Activate spinner
-
-    // Front-end password match validation
-    if (values.password !== values.confirmPassword) {
-      setError("Passwords do not match!");
-      setLoading(false); // Deactivate spinner
->>>>>>> b3e59061f21708641346bf4bd1c61034a77e7742
+    if (formData.password !== formData.confirmPassword) {
+      setFormErrors({
+        ...formErrors,
+        confirmPasswordError: "Passwords do not match",
+      });
       return;
     }
+
+    setLoading(true);
 
     try {
       const response = await axios.post(
         "http://localhost:4000/user/register",
-        values
+        formData
       );
-<<<<<<< HEAD
-      setMessage("Registration successful!");
-      setError("");
+      setErrorMessage("");
       console.log("Registration successful:", response.data);
       window.location.href = "/login";
-=======
-      if (response.status === 201) {
-        setMessage("Registration successful!");
-        setError("");
-        console.log("Registration successful:", response.data);
-      } else {
-        setError("Registration failed");
-        setMessage("");
-        console.error("Registration failed:", response.data);
-      }
->>>>>>> b3e59061f21708641346bf4bd1c61034a77e7742
     } catch (error) {
-      setError(error.response?.data.message || error.message);
-      setMessage("");
-<<<<<<< HEAD
+      setErrorMessage("An error occurred");
       console.error(
         "Error registering user:",
-        error.response?.data.message || error.message
+        error.response?.data || error.message
       );
     } finally {
       setLoading(false);
-=======
-      console.error("Error registering user:", error.response?.data || error.message);
-    } finally {
-      setLoading(false); // Always deactivate spinner after API call
->>>>>>> b3e59061f21708641346bf4bd1c61034a77e7742
     }
+  };
+
+  const handleCloseError = () => {
+    setErrorMessage("");
   };
 
   return (
     <div className="container">
       <div className="card">
         <h1>Welcome To Bora!!</h1>
-        {message && <div className="alert alert-success">{message}</div>}
-        {error && <div className="alert alert-danger">{error}</div>}
-        {loading && (
-          <div className="spinner-container">
-            <div className="spinner" role="status"></div>
-          </div>
-        )}
         <form onSubmit={handleSubmit}>
+          {/* Name input */}
           <div className="mb-3">
+            {errorMessage && (
+              <div className="alert alert-danger alert-dismissible">
+                {errorMessage}
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={handleCloseError}
+                >
+                  &times;
+                </button>
+              </div>
+            )}
             <label htmlFor="name" className="form-label">
-              Name
+              <FontAwesomeIcon icon={faUser} /> Name
             </label>
             <input
               type="text"
@@ -92,12 +125,14 @@ const Register = () => {
               placeholder="John Doe"
               required
               autoComplete="username"
+              value={formData.name}
+              onChange={handleChange}
             />
           </div>
-
+          {/* Email input */}
           <div className="mb-3">
             <label htmlFor="email" className="form-label">
-              Email
+              <FontAwesomeIcon icon={faEnvelope} /> Email
             </label>
             <input
               type="email"
@@ -106,60 +141,64 @@ const Register = () => {
               name="email"
               placeholder="johndoe@example.com"
               required
-<<<<<<< HEAD
               autoComplete="username"
-=======
-              autoComplete="new-password"
->>>>>>> b3e59061f21708641346bf4bd1c61034a77e7742
+              value={formData.email}
+              onChange={handleChange}
             />
           </div>
-
+          {/* Password input */}
           <div className="mb-3">
             <label htmlFor="password" className="form-label">
-              Password
+              <FontAwesomeIcon icon={faLock} /> Password
             </label>
             <input
               type="password"
-              className="form-control"
+              className={`form-control ${
+                formErrors.passwordError ? "is-invalid" : ""
+              }`}
               id="password"
               name="password"
               placeholder="********"
               required
               autoComplete="new-password"
+              value={formData.password}
+              onChange={handleChange}
             />
+            {formErrors.passwordError && (
+              <div className="invalid-feedback">
+                {formErrors.passwordError}
+              </div>
+            )}
           </div>
-
+          {/* Confirm Password input */}
           <div className="mb-3">
             <label htmlFor="confirm-password" className="form-label">
-              Confirm Password
+              <FontAwesomeIcon icon={faLock} /> Confirm Password
             </label>
             <input
               type="password"
-              className="form-control"
+              className={`form-control ${
+                formErrors.confirmPasswordError ? "is-invalid" : ""
+              }`}
               id="confirm-password"
               name="confirmPassword"
               placeholder="********"
               required
               autoComplete="new-password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
             />
+            {formErrors.confirmPasswordError && (
+              <div className="invalid-feedback">
+                {formErrors.confirmPasswordError}
+              </div>
+            )}
           </div>
-
+          {/* Submit button */}
           <button type="submit" className="btn btn-primary">
-<<<<<<< HEAD
-             {loading ? (
-              <span className="visually-hidden">Loading...</span>
-            ) : (
-              "Sign"
-            )}
             Sign Up
-=======
-            {loading ? (
-              <span className="visually-hidden">Loading...</span>
-            ) : (
-              "Sign Up"
-            )}
->>>>>>> b3e59061f21708641346bf4bd1c61034a77e7742
           </button>
+          {/* Already have an account */}
           <div className="mt-3 text-center">
             <p className="fw-bold">
               Already have an account? <a href="/login">Sign in</a>
@@ -167,6 +206,14 @@ const Register = () => {
           </div>
         </form>
       </div>
+      {/* Loading spinner */}
+      {loading && (
+        <div className="spinner-overlay">
+          <div className="spinner-border text-light" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
